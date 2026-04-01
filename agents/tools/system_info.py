@@ -53,3 +53,29 @@ def get_system_info(hostname: str) -> dict[str, Any]:
         "status": "unknown",
         "error": f"Host '{hostname}' not found in inventory"
     }
+
+# Tool definition for list_hosts — note there are no parameters,
+# so "properties" is empty and "required" is an empty list.
+LIST_HOSTS_TOOL: dict[str, Any] = {
+    "name": "list_hosts",
+    "description": (
+        "Returns the list of all known hostnames in the inventory. "
+        "Use this tool when the user asks which hosts are available, "
+        "what systems can be checked, or what hosts exist."
+    ),
+    "input_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+    }
+}
+
+def list_hosts() -> dict[str, Any]:
+    """
+    Returns all known hostnames in the inventory.
+    In a real IT Ops implementation this would query a CMDB,
+    Azure resource list, or Ansible inventory file.
+    """
+    return {
+        "hosts": ["prod-api-01", "prod-db-01", "prod-lb-01"]
+    }

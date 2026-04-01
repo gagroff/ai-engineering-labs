@@ -16,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import anthropic
 
-from agents.tools.system_info import SYSTEM_INFO_TOOL, get_system_info
+from agents.tools.system_info import SYSTEM_INFO_TOOL, get_system_info, LIST_HOSTS_TOOL, list_hosts
 
 # Create the Anthropic client using your API key from the environment variable
 client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
@@ -46,7 +46,7 @@ def run_tool_use_loop(user_message: str) -> str:
     response = client.messages.create(
         model=MODEL,
         max_tokens=1024,
-        tools=[SYSTEM_INFO_TOOL],
+        tools=[SYSTEM_INFO_TOOL, LIST_HOSTS_TOOL],
         messages=messages,
     )
 
@@ -81,6 +81,8 @@ def run_tool_use_loop(user_message: str) -> str:
         # Execute the function locally
         if block.name == "get_system_info":
             result = get_system_info(**block.input)
+        elif block.name == "list_hosts":
+            result = list_hosts()
         else:
             result = {"error": f"Unknown tool: {block.name}"}
 
@@ -103,7 +105,7 @@ def run_tool_use_loop(user_message: str) -> str:
     final_response = client.messages.create(
         model=MODEL,
         max_tokens=1024,
-        tools=[SYSTEM_INFO_TOOL],
+        tools=[SYSTEM_INFO_TOOL, LIST_HOSTS_TOOL],
         messages=messages,
     )
 
@@ -119,8 +121,14 @@ def run_tool_use_loop(user_message: str) -> str:
 if __name__ == "__main__":
     # Test 1: A question that should trigger the tool
     # Claude should recognize "prod-api-01" as a host and call get_system_info
-    run_tool_use_loop("What is the current CPU and memory usage on prod-api-01?")
+    run_tool_use_loop("Check the status of prod-api-01 and prod-db-01")
 
     # Test 2: A general question that should NOT trigger the tool
     # Claude should answer from its own knowledge without calling any tool
     run_tool_use_loop("What does CPU utilization measure?")
+
+    # Test 3: Should trigger list_hosts
+    run_tool_use_loop("Which hosts can you check?")
+
+    run_tool_use_loop("What is the status of all available hosts?")
+    
